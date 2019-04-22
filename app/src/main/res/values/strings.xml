@@ -1,3 +1,25 @@
 <resources>
-    <string name="app_name">Open Trivia DB App</string>
+    <string name="app_name">OTDB App</string>
+    <string name="tool_bar_main">Open Trivia DB</string>
+    <string name="tv_config_prompt">Configure your option to get started</string>
+    <string name="tv_category_prompt">Select category:</string>
+    <string name="tv_difficulty_prompt">Select difficulty:</string>
+    <string name="tv_type_prompt">Select type:</string>
+    
+    <string name="tv_view_question_count">VIEW QUESTION COUNT</string>
+
+
+
+    <string-array name="array_difficulty">
+        <item>Default</item>
+        <item>Easy</item>
+        <item>Medium</item>
+        <item>Hard</item>
+    </string-array>
+
+    <string-array name="array_type">
+        <item>Default</item>
+        <item>Multiple</item>
+        <item>Boolean</item>
+    </string-array>
 </resources>

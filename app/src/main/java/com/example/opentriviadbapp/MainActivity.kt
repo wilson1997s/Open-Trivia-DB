@@ -1,7 +1,11 @@
 package com.example.opentriviadbapp
 
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
+import androidx.navigation.NavController
+import androidx.navigation.Navigation
+import androidx.navigation.ui.NavigationUI
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -9,6 +13,17 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        this.setSupportActionBar(tb_main_act)
+
+        val navController = Navigation.findNavController(this, R.id.fragment)
+
+        setupActionBar(navController)
 
     }
+
+    private fun setupActionBar(navController: NavController) {
+        NavigationUI.setupWithNavController(tb_main_act, navController)
+    }
+
+
 }
