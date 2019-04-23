@@ -1,18 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/mainFragment">
     <fragment
         android:id="@+id/mainFragment"
         android:name="com.example.opentriviadbapp.fragment.MainFragment"
-        android:label="MainFragment">
+        android:label="MainFragment"
+        tools:layout="@layout/fragment_main">
         <action
             android:id="@+id/question_count_action"
             app:destination="@+id/questionCountFragment" />
+        <action
+            android:id="@+id/action_start"
+            app:destination="@id/questionFragment" />
     </fragment>
     <fragment
         android:id="@+id/questionCountFragment"
         android:name="com.example.opentriviadbapp.fragment.QuestionCountFragment"
-        android:label="QuestionCountFragment" />
+        android:label="QuestionCountFragment"
+        tools:layout="@layout/fragment_question_count"/>
+    <fragment
+        android:id="@+id/questionFragment"
+        android:name="com.example.opentriviadbapp.fragment.QuestionFragment"
+        android:label="QuestionFragment"
+        tools:layout="@layout/fragment_question">
+        <action
+            android:id="@+id/action_back"
+            app:destination="@id/mainFragment" />
+    </fragment>
 </navigation>

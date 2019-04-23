@@ -2,6 +2,8 @@ package com.example.opentriviadbapp.retrofit
 
 import com.example.opentriviadbapp.model.CategoryCountResponse
 import com.example.opentriviadbapp.model.CategoryListResponse
+import com.example.opentriviadbapp.model.QuestionResponse
+import com.example.opentriviadbapp.model.TokenResponse
 import io.reactivex.Observable
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -40,4 +42,33 @@ object ApiRepo {
     fun getQuestionCountList(id: Int): Observable<CategoryCountResponse> {
         return apiService.getQuestionCountList(id)
     }
+
+    fun getQuestionDefault(): Observable<QuestionResponse> {
+        return apiService.getQuestionDefault()
+    }
+
+    fun getQuestion(token: String, category: String, difficulty: String, type: String): Observable<QuestionResponse> {
+        var url: String = "https://opentdb.com/api.php?amount=1&token=$token"
+        if (!category.equals("default")) {
+            url = "$url&category=$category"
+        }
+        if (!difficulty.equals("default")) {
+            url = "$url&difficulty=$difficulty"
+        }
+        if (!type.equals("default")) {
+            url = "$url&type=$type"
+        }
+
+        return apiService.getQuestion(url)
+    }
+
+    fun getToken(): Observable<TokenResponse> {
+        return apiService.getToken()
+    }
+
+    fun resetToken(token: String): Observable<TokenResponse> {
+        return apiService.resetToken(token)
+    }
+
+
 }

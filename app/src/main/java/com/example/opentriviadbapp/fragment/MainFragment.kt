@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.navigation.findNavController
 import com.example.opentriviadbapp.R
+import com.example.opentriviadbapp.model.Category
 import com.example.opentriviadbapp.retrofit.ApiRepo
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -22,6 +23,7 @@ class MainFragment : Fragment() {
     private var dataAdapter: ArrayAdapter<String>? = null
     private var disposable: Disposable? = null
     private var categoryName = arrayListOf<String>()
+    private var categoryList = arrayListOf<Category>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,6 +35,25 @@ class MainFragment : Fragment() {
         //set onclick listener
         view.tv_question_count.setOnClickListener { view ->
             view.findNavController().navigate(R.id.question_count_action)
+        }
+
+        view.btn_next.setOnClickListener { view ->
+            var bundle = Bundle()
+
+            var tempId = "default"
+            if (!spn_category.selectedItem.toString().toLowerCase().equals("default")) {
+                categoryList.forEach {
+                    if (it.name.equals(spn_category.selectedItem.toString())) {
+                        tempId = it.id.toString()
+                    }
+                }
+            }
+
+            bundle.putString("category", tempId)
+            bundle.putString("difficulty", spn_difficulty.selectedItem.toString().toLowerCase())
+            bundle.putString("type", spn_type.selectedItem.toString().toLowerCase())
+
+            view.findNavController().navigate(R.id.action_start, bundle)
         }
 
         getCategoryList()
@@ -57,6 +78,7 @@ class MainFragment : Fragment() {
 
         //make sure the category list (for Category object, and Name) is empty
         categoryName.clear()
+        categoryList.clear()
 
         disposable =
             ApiRepo.getCategoryList()
@@ -70,6 +92,7 @@ class MainFragment : Fragment() {
                         result.categoryList.forEach {
                             //add reach Category and name into the list
                             categoryName.add(it.name)
+                            categoryList.add(it)
                         }
                         //call adapter to update view
                         dataAdapter!!.notifyDataSetChanged()
