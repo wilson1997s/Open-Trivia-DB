@@ -2,116 +2,85 @@ package com.example.opentriviadbapp.fragment
 
 import android.graphics.Color
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.navigation.findNavController
 import com.example.opentriviadbapp.R
+import com.example.opentriviadbapp.base.BaseFragment
 import com.example.opentriviadbapp.model.Category
-import com.example.opentriviadbapp.retrofit.ApiRepo
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import com.example.opentriviadbapp.mvpview.MainFragmentMvpView
+import com.example.opentriviadbapp.presenter.MainFragmentPresenter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_main.*
-import kotlinx.android.synthetic.main.fragment_main.view.*
 
-class MainFragment : Fragment() {
+class MainFragment : BaseFragment(), MainFragmentMvpView {
 
     private var dataAdapter: ArrayAdapter<String>? = null
-    private var disposable: Disposable? = null
-    private var categoryName = arrayListOf<String>()
-    private var categoryList = arrayListOf<Category>()
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    private var mCategoryList = arrayListOf<Category>()
+
+    private var mainFragmentPresenter: MainFragmentPresenter? = null
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         var view = inflater.inflate(R.layout.fragment_main, container, false)
 
-        //set onclick listener
-        view.tv_question_count.setOnClickListener { view ->
-            view.findNavController().navigate(R.id.question_count_action)
-        }
+        mainFragmentPresenter = MainFragmentPresenter()  //create presenter
+        mainFragmentPresenter!!.attachView(this) //attach presenter
 
-        view.btn_next.setOnClickListener { view ->
-            var bundle = Bundle()
-
-            var tempId = "default"
-            if (!spn_category.selectedItem.toString().toLowerCase().equals("default")) {
-                categoryList.forEach {
-                    if (it.name.equals(spn_category.selectedItem.toString())) {
-                        tempId = it.id.toString()
-                    }
-                }
-            }
-
-            bundle.putString("category", tempId)
-            bundle.putString("difficulty", spn_difficulty.selectedItem.toString().toLowerCase())
-            bundle.putString("type", spn_type.selectedItem.toString().toLowerCase())
-
-            view.findNavController().navigate(R.id.action_start, bundle)
-        }
-
-        getCategoryList()
-        dataAdapter =
-            ArrayAdapter<String>(
-                activity!!.applicationContext,
-                android.R.layout.simple_spinner_item,
-                categoryName
-            )
-        dataAdapter!!.notifyDataSetChanged()
-        dataAdapter!!.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        view.spn_category.adapter = dataAdapter;
-
-        view.btn_next.isEnabled = false
-        view.btn_next.setBackgroundColor(Color.LTGRAY)
+        activity!!.tb_main_act.title = "OTDB App"
 
         return view
     }
 
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
 
-    fun getCategoryList() {
+        mainFragmentPresenter!!.setupCategorySpinner()  //setup category
 
-        //make sure the category list (for Category object, and Name) is empty
-        categoryName.clear()
-        categoryList.clear()
+        tv_question_count.setOnClickListener { view ->
+            view.findNavController().navigate(R.id.question_count_action)
+        }
 
-        disposable =
-            ApiRepo.getCategoryList()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    { result ->
-                        //add default value for name
-                        categoryName.add("Default")
-
-                        result.categoryList.forEach {
-                            //add reach Category and name into the list
-                            categoryName.add(it.name)
-                            categoryList.add(it)
-                        }
-                        //call adapter to update view
-                        dataAdapter!!.notifyDataSetChanged()
-                        //hide the progressBar
-                        setProgressBarVisibility(false)
-                        view!!.btn_next.isEnabled = true
-                        view!!.btn_next.setBackgroundColor(Color.parseColor("#D81B60"))
-                    },
-                    { error -> println("Error:" + error.message) }
-                )
+        btn_next.setOnClickListener { view ->
+            var bundle = mainFragmentPresenter!!.makeQuestionBundle(
+                spn_category.selectedItem.toString().toLowerCase(),
+                spn_difficulty.selectedItem.toString().toLowerCase(),
+                spn_type.selectedItem.toString().toLowerCase()
+            )
+            view.findNavController().navigate(R.id.action_start, bundle)
+        }
     }
 
-    override fun onResume() {
-        super.onResume()
-        activity!!.tb_main_act.title = "OTDB App"
+    override fun onDestroyView() {
+        super.onDestroyView()
+        mainFragmentPresenter!!.detachView()
+
     }
 
-    // to change progress bar visibility
-    fun setProgressBarVisibility(visible: Boolean) {
+    override fun setupCategorySpinner(categoryList: ArrayList<Category>, categoryNameList: ArrayList<String>) {
+        mCategoryList.clear()
+        mCategoryList.addAll(categoryList)
+
+        dataAdapter =
+            ArrayAdapter(activity!!.applicationContext, android.R.layout.simple_spinner_item, categoryNameList)
+        dataAdapter!!.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spn_category.adapter = dataAdapter
+        dataAdapter!!.notifyDataSetChanged()
+    }
+
+    override fun setButtonNextEnable(enable: Boolean) {
+        btn_next.isEnabled = enable
+        if (enable) {
+            btn_next.setBackgroundColor(Color.parseColor("#D81B60")) //color accent
+        } else {
+            btn_next.setBackgroundColor(Color.LTGRAY)
+        }
+    }
+
+    override fun setCategoryProgressBarVisible(visible: Boolean) {
         if (visible) {
             pb_category.visibility = View.VISIBLE
         } else {
@@ -119,4 +88,7 @@ class MainFragment : Fragment() {
         }
     }
 
+    override fun showError(errorCode: String) {
+        Toast.makeText(activity, errorCode, Toast.LENGTH_SHORT).show()
+    }
 }
