@@ -5,264 +5,208 @@ import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.support.design.widget.Snackbar
-import android.support.v4.app.Fragment
-import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
+import android.widget.Toast
 import androidx.navigation.findNavController
 import com.example.opentriviadbapp.R
-import com.example.opentriviadbapp.retrofit.ApiRepo
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import com.example.opentriviadbapp.base.BaseFragment
+import com.example.opentriviadbapp.mvpview.QuestionFragmentMvpView
+import com.example.opentriviadbapp.presenter.QuestionFragmentPresenter
 import kotlinx.android.synthetic.main.fragment_question.*
 import kotlinx.android.synthetic.main.fragment_question.view.*
 
+class QuestionFragment : BaseFragment(), QuestionFragmentMvpView {
 
-class QuestionFragment : Fragment() {
-
-    private var disposable: Disposable? = null
-    var correctAnswer: String = ""
-    var token = "0A"
+    //presenter
+    private var questionFragmentPresenter: QuestionFragmentPresenter? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         var view = inflater.inflate(R.layout.fragment_question, container, false)
-        var sharedPref = activity?.getSharedPreferences("token", Context.MODE_PRIVATE)
-        token = sharedPref!!.getString("token", "0A")
 
-        if (token.equals("0A")) {
-            getNewToken()
-        }
+        questionFragmentPresenter = QuestionFragmentPresenter()
+        questionFragmentPresenter!!.attachView(this)
 
         return view
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        val category = arguments!!.getString("category")
-        val difficulty = arguments!!.getString("difficulty")
-        val type = arguments!!.getString("type")
+
+        var category = arguments?.getString("category")
+        var difficulty = arguments?.getString("difficulty")
+        var type = arguments?.getString("type")
+
+        questionFragmentPresenter!!.passBundle(category!!, difficulty!!, type!!)
+        //to set question, first get token
+        questionFragmentPresenter!!.getToken(activity)
 
         view!!.btn_roll.setOnClickListener {
-            setQuestion(token, category, difficulty, type)
+            questionFragmentPresenter!!.setQuestion(
+                activity!!.getSharedPreferences(
+                    "token1",
+                    Context.MODE_PRIVATE
+                ).getString("token", "")!!
+            )
         }
-        setQuestion(token, category, difficulty, type)
 
         cv_answer1.setOnClickListener {
-            if (tv_answer1.text.equals(correctAnswer)) {
-                cv_answer1.setCardBackgroundColor(Color.GREEN)
-                cv_answer2.setCardBackgroundColor(Color.WHITE)
-                cv_answer3.setCardBackgroundColor(Color.WHITE)
-                cv_answer4.setCardBackgroundColor(Color.WHITE)
-            } else {
-                cv_answer1.setCardBackgroundColor(Color.RED)
-                cv_answer2.setCardBackgroundColor(Color.WHITE)
-                cv_answer3.setCardBackgroundColor(Color.WHITE)
-                cv_answer4.setCardBackgroundColor(Color.WHITE)
-                cv_answer1.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.animation))
-            }
+            questionFragmentPresenter!!.checkAnswer(tv_answer1.text.toString())
         }
 
         cv_answer2.setOnClickListener {
-            if (tv_answer2.text.equals(correctAnswer)) {
-                cv_answer1.setCardBackgroundColor(Color.WHITE)
-                cv_answer2.setCardBackgroundColor(Color.GREEN)
-                cv_answer3.setCardBackgroundColor(Color.WHITE)
-                cv_answer4.setCardBackgroundColor(Color.WHITE)
-            } else {
-                cv_answer1.setCardBackgroundColor(Color.WHITE)
-                cv_answer2.setCardBackgroundColor(Color.RED)
-                cv_answer3.setCardBackgroundColor(Color.WHITE)
-                cv_answer4.setCardBackgroundColor(Color.WHITE)
-                cv_answer2.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.animation))
-            }
+            questionFragmentPresenter!!.checkAnswer(tv_answer2.text.toString())
         }
 
         cv_answer3.setOnClickListener {
-            if (tv_answer3.text.equals(correctAnswer)) {
-                cv_answer1.setCardBackgroundColor(Color.WHITE)
-                cv_answer2.setCardBackgroundColor(Color.WHITE)
-                cv_answer3.setCardBackgroundColor(Color.GREEN)
-                cv_answer4.setCardBackgroundColor(Color.WHITE)
-            } else {
-                cv_answer1.setCardBackgroundColor(Color.WHITE)
-                cv_answer2.setCardBackgroundColor(Color.WHITE)
-                cv_answer3.setCardBackgroundColor(Color.RED)
-                cv_answer4.setCardBackgroundColor(Color.WHITE)
-                cv_answer3.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.animation))
-            }
+            questionFragmentPresenter!!.checkAnswer(tv_answer3.text.toString())
         }
 
         cv_answer4.setOnClickListener {
-            if (tv_answer4.text.equals(correctAnswer)) {
-                cv_answer1.setCardBackgroundColor(Color.WHITE)
-                cv_answer2.setCardBackgroundColor(Color.WHITE)
-                cv_answer3.setCardBackgroundColor(Color.WHITE)
-                cv_answer4.setCardBackgroundColor(Color.GREEN)
-            } else {
-                cv_answer1.setCardBackgroundColor(Color.WHITE)
-                cv_answer2.setCardBackgroundColor(Color.WHITE)
-                cv_answer3.setCardBackgroundColor(Color.WHITE)
-                cv_answer4.setCardBackgroundColor(Color.RED)
-                cv_answer4.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.animation))
-            }
+            questionFragmentPresenter!!.checkAnswer(tv_answer4.text.toString())
         }
-
     }
 
-    fun getNewToken() {
-        disposable =
-            ApiRepo.getToken()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    { result ->
-                        var sharedPref = activity?.getSharedPreferences("token", Context.MODE_PRIVATE)
-                        with(sharedPref!!.edit()) {
-                            putString("token", result.token)
-                            commit()
-                        }
-                        token = result.token
-                    }, { error -> println("Error:" + error.message) }
-                )
+    override fun onDestroyView() {
+        super.onDestroyView()
+        questionFragmentPresenter!!.detachView()
     }
 
-
-    fun setQuestion(token: String, category: String, difficulty: String, type: String) {
-        btn_roll.isEnabled = false
-        btn_roll.setBackgroundColor(Color.LTGRAY)
-        pb_question.visibility = View.VISIBLE
-        cv_answer1.visibility = View.INVISIBLE
-        cv_answer2.visibility = View.INVISIBLE
-        cv_answer3.visibility = View.INVISIBLE
-        cv_answer4.visibility = View.INVISIBLE
-        tv_question.visibility = View.INVISIBLE
-        tv_difficulty.visibility = View.INVISIBLE
+    override fun resetAnswerBackground() {
         cv_answer1.setCardBackgroundColor(Color.WHITE)
         cv_answer2.setCardBackgroundColor(Color.WHITE)
         cv_answer3.setCardBackgroundColor(Color.WHITE)
         cv_answer4.setCardBackgroundColor(Color.WHITE)
+    }
 
-        disposable =
-            ApiRepo.getQuestion(token, category, difficulty, type)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    { result ->
-                        if (result.responseCode == 0) {
+    override fun setAnswer(type: String, correctAns: String, incorrectAns: ArrayList<String>) {
 
-                            var selectedQuestion = result.results[0]
-                            var type = selectedQuestion.type
-                            var difficulty = selectedQuestion.difficulty
-                            var question = Html.fromHtml(selectedQuestion.question).toString()
-                            correctAnswer = Html.fromHtml(selectedQuestion.correctAnswer).toString()
-                            var tempIncorrectAnswer = selectedQuestion.incorrectAnswer
+        if (type.equals("boolean")) {
+            var position = listOf(correctAns, incorrectAns[0]).shuffled()
 
-                            var incorrectAnswer = listOf<String>()
+            tv_answer1.text = position[0]
+            tv_answer2.text = position[1]
+        } else {
+            var position = listOf(correctAns, incorrectAns[0], incorrectAns[1], incorrectAns[2]).shuffled()
 
-                            tempIncorrectAnswer.forEach {
-                                incorrectAnswer += Html.fromHtml(it).toString()
-                            }
+            tv_answer1.text = position[0]
+            tv_answer2.text = position[1]
+            tv_answer3.text = position[2]
+            tv_answer4.text = position[3]
+        }
+    }
 
-                            tv_question.text = question
-                            tv_difficulty.text = difficulty
+    override fun setAnswerFeedback(correct: Boolean, selectedAns: String) {
+        var colorList: ArrayList<Int> = arrayListOf(Color.GREEN, Color.RED)
 
-                            val drawable = tv_difficulty.getBackground() as GradientDrawable
+        var color = if (correct) {
+            colorList[0]
+        } else {
+            colorList[1]
+        }
 
-                            if (difficulty.equals("easy")) {
-                                drawable.setColor(Color.GREEN)
-                            } else if (difficulty.equals("medium")) {
-                                drawable.setColor(Color.parseColor("#FFA500"))
-                            } else {
-                                drawable.setColor(Color.RED)
-                            }
+        when {
+            tv_answer1.text.equals(selectedAns) -> {
+                cv_answer1!!.setCardBackgroundColor(color)
+                if (!correct) {
+                    cv_answer1.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.animation))
+                }
+            }
+            tv_answer2.text.equals(selectedAns) -> {
+                cv_answer2.setCardBackgroundColor(color)
+                if (!correct) {
+                    cv_answer2.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.animation))
+                }
+            }
+            tv_answer3.text.equals(selectedAns) -> {
+                cv_answer3.setCardBackgroundColor(color)
+                if (!correct) {
+                    cv_answer3.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.animation))
+                }
+            }
+            tv_answer4.text.equals(selectedAns) -> {
+                cv_answer4.setCardBackgroundColor(color)
+                if (!correct) {
+                    cv_answer4.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.animation))
+                }
+            }
+        }
+    }
 
-                            if (type.equals("boolean")) {
-                                cv_answer1.visibility = View.VISIBLE
-                                cv_answer2.visibility = View.VISIBLE
+    override fun setAnswerVisible(visible: Boolean, number: Int) {
+        var valueArray = arrayListOf<Int>(View.VISIBLE, View.INVISIBLE)
+        var visibleValue: Int = if (visible) {
+            0
+        } else {
+            1
+        }
 
-                                var tempPosition = listOf(correctAnswer, incorrectAnswer[0])
+        if (number == 2) {   //for boolean's question
+            cv_answer1.visibility = valueArray[visibleValue]
+            cv_answer2.visibility = valueArray[visibleValue]
+        } else if (number == 4) { //for multiple's question
+            cv_answer1.visibility = valueArray[visibleValue]
+            cv_answer2.visibility = valueArray[visibleValue]
+            cv_answer3.visibility = valueArray[visibleValue]
+            cv_answer4.visibility = valueArray[visibleValue]
+        }
+    }
 
-                                var randomNo1 = 0
-                                var randomNo2 = 0
-                                do {
-                                    randomNo1 = (0..1).random()
-                                    randomNo2 = (0..1).random()
-                                } while (randomNo1 == randomNo2)
+    override fun setDifficulty(difficulty: String) {
+        tv_difficulty.text = difficulty
+        //set color
+        val drawable = tv_difficulty.getBackground() as GradientDrawable
+        when (difficulty.toLowerCase()) {
+            "easy" -> drawable.setColor(Color.GREEN)
+            "medium" -> drawable.setColor(Color.parseColor("#FFA500"))
+            "hard" -> drawable.setColor(Color.RED)
+        }
+    }
 
-                                tv_answer1.text = tempPosition[randomNo1].toString()
-                                tv_answer2.text = tempPosition[randomNo2].toString()
+    override fun setQuestion(question: String) {
+        tv_question.text = question
+    }
 
-                            } else {
-                                cv_answer1.visibility = View.VISIBLE
-                                cv_answer2.visibility = View.VISIBLE
-                                cv_answer3.visibility = View.VISIBLE
-                                cv_answer4.visibility = View.VISIBLE
+    override fun setQuestionProgressBarVisible(visible: Boolean) {
+        if (visible) {
+            pb_question.visibility = View.VISIBLE
+        } else {
+            pb_question.visibility = View.INVISIBLE
+        }
+    }
 
-                                var tempPosition =
-                                    listOf(correctAnswer, incorrectAnswer[0], incorrectAnswer[1], incorrectAnswer[2])
+    override fun setQuestionVisible(visible: Boolean) {
+        if (visible) {
+            tv_question.visibility = View.VISIBLE
+            tv_difficulty.visibility = View.VISIBLE
+        } else {
+            tv_question.visibility = View.INVISIBLE
+            tv_difficulty.visibility = View.INVISIBLE
+        }
+    }
 
-                                var randomNo1 = 0
-                                var randomNo2 = 0
-                                var randomNo3 = 0
-                                var randomNo4 = 0
+    override fun setRollButtonEnable(enable: Boolean) {
+        if (enable) {
+            btn_roll.isEnabled = true
+            btn_roll.setBackgroundColor(Color.parseColor("#D81B60"))
+        } else {
+            btn_roll.isEnabled = false
+            btn_roll.setBackgroundColor(Color.LTGRAY)
+        }
+    }
 
-                                do {
-                                    randomNo1 = (0..3).random()
-                                    randomNo2 = (0..3).random()
-                                    randomNo3 = (0..3).random()
-                                    randomNo4 = (0..3).random()
-                                } while (randomNo1 == randomNo2
-                                    || randomNo1 == randomNo3
-                                    || randomNo1 == randomNo4
-                                    || randomNo2 == randomNo3
-                                    || randomNo2 == randomNo4
-                                    || randomNo3 == randomNo4
-                                )
+    override fun setSnackbar(text: String) {
+        Snackbar
+            .make(view!!, text, Snackbar.LENGTH_INDEFINITE)
+            .setAction("Back") {
+                view!!.findNavController()?.navigate(R.id.action_back)
+            }.show()
+    }
 
-                                tv_answer1.text = tempPosition[randomNo1].toString()
-                                tv_answer2.text = tempPosition[randomNo2].toString()
-                                tv_answer3.text = tempPosition[randomNo3].toString()
-                                tv_answer4.text = tempPosition[randomNo4].toString()
-
-                            }
-
-                            pb_question.visibility = View.INVISIBLE
-                            btn_roll.isEnabled = true
-                            btn_roll.setBackgroundColor(Color.parseColor("#D81B60"))
-                            tv_question.visibility = View.VISIBLE
-                            tv_difficulty.visibility = View.VISIBLE
-                        } else if (result.responseCode == 1) {
-                            Snackbar
-                                .make(
-                                    getView()!!,
-                                    "No result found, please refine criteria",
-                                    Snackbar.LENGTH_INDEFINITE
-                                )
-                                .setAction("Back") {
-                                    view?.findNavController()?.navigate(R.id.action_back)
-                                }.show()
-                            pb_question.visibility = View.INVISIBLE
-                        } else if (result.responseCode == 3) {
-                            getNewToken()
-                            setQuestion(token, category, difficulty, type)
-                        } else if (result.responseCode == 4) {
-
-                            disposable =
-                                ApiRepo.resetToken(token)
-                                    .subscribeOn(Schedulers.io())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe(
-                                        { result ->
-                                        }, { error -> println("Error:" + error.message) }
-                                    )
-                            setQuestion(token, category, difficulty, type)
-                        }
-                    },
-                    { error -> println("Error:" + error.message) }
-                )
+    override fun showError(errorCode: String) {
+        Toast.makeText(activity, errorCode, Toast.LENGTH_LONG).show()
     }
 
 }

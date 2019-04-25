@@ -12,6 +12,4 @@ data class Question(
     @JsonProperty("question") var question: String,
     @JsonProperty("correct_answer") var correctAnswer: String,
     @JsonProperty("incorrect_answers") var incorrectAnswer: List<String>
-) {
-
-}
+)

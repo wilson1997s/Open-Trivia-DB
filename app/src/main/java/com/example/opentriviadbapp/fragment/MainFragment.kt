@@ -18,11 +18,13 @@ import kotlinx.android.synthetic.main.fragment_main.*
 
 class MainFragment : BaseFragment(), MainFragmentMvpView {
 
+    //view
     private var dataAdapter: ArrayAdapter<String>? = null
 
-    private var mCategoryList = arrayListOf<Category>()
-
+    //presenter
     private var mainFragmentPresenter: MainFragmentPresenter? = null
+
+    private var mCategoryList = arrayListOf<Category>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         var view = inflater.inflate(R.layout.fragment_main, container, false)
@@ -60,17 +62,6 @@ class MainFragment : BaseFragment(), MainFragmentMvpView {
 
     }
 
-    override fun setupCategorySpinner(categoryList: ArrayList<Category>, categoryNameList: ArrayList<String>) {
-        mCategoryList.clear()
-        mCategoryList.addAll(categoryList)
-
-        dataAdapter =
-            ArrayAdapter(activity!!.applicationContext, android.R.layout.simple_spinner_item, categoryNameList)
-        dataAdapter!!.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spn_category.adapter = dataAdapter
-        dataAdapter!!.notifyDataSetChanged()
-    }
-
     override fun setButtonNextEnable(enable: Boolean) {
         btn_next.isEnabled = enable
         if (enable) {
@@ -86,6 +77,17 @@ class MainFragment : BaseFragment(), MainFragmentMvpView {
         } else {
             pb_category.visibility = View.INVISIBLE
         }
+    }
+
+    override fun setupCategorySpinner(categoryList: ArrayList<Category>, categoryNameList: ArrayList<String>) {
+        mCategoryList.clear()
+        mCategoryList.addAll(categoryList)
+
+        dataAdapter =
+            ArrayAdapter(activity!!.applicationContext, android.R.layout.simple_spinner_item, categoryNameList)
+        dataAdapter!!.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spn_category.adapter = dataAdapter
+        dataAdapter!!.notifyDataSetChanged()
     }
 
     override fun showError(errorCode: String) {

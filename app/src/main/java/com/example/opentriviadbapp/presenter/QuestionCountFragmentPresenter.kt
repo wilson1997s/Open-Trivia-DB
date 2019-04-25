@@ -10,13 +10,11 @@ import io.reactivex.schedulers.Schedulers
 
 class QuestionCountFragmentPresenter : BasePresenter<QuestionCountFragmentMvpView>() {
 
-    private var mCategoryList: ArrayList<Category> = arrayListOf<Category>()
+    //for RxJava
     private var compositeDisposable: CompositeDisposable? = CompositeDisposable()
-    private var counter = 0
 
-    override fun attachView(mvpView: QuestionCountFragmentMvpView) {
-        super.attachView(mvpView)
-    }
+    private var mCategoryList: ArrayList<Category> = arrayListOf<Category>()
+    private var counter = 0
 
     override fun detachView() {
         super.detachView()
@@ -29,7 +27,7 @@ class QuestionCountFragmentPresenter : BasePresenter<QuestionCountFragmentMvpVie
         getCategoryList() //followed by get Question count
     }
 
-    fun getCategoryList() {
+    private fun getCategoryList() {
         compositeDisposable!!.add(
             ApiRepo.getCategoryList()
                 .subscribeOn(Schedulers.io())
@@ -47,7 +45,7 @@ class QuestionCountFragmentPresenter : BasePresenter<QuestionCountFragmentMvpVie
         )
     }
 
-    fun getQuestionCount() {
+    private fun getQuestionCount() {
 
         mCategoryList.forEach {
             compositeDisposable!!.add(

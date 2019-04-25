@@ -1,7 +1,6 @@
 package com.example.opentriviadbapp.activity
 
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.navigation.ui.NavigationUI
@@ -26,6 +25,5 @@ class MainActivity : BaseActivity() {
     private fun setupActionBar(navController: NavController) {
         NavigationUI.setupWithNavController(tb_main_act, navController)
     }
-
 
 }

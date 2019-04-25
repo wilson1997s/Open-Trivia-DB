@@ -4,7 +4,6 @@ open class BasePresenter<T : MvpView> : Presenter<T> {
 
     private var mMvpView: T? = null
 
-
     override fun attachView(mvpView: T) {
         mMvpView = mvpView
     }
@@ -13,14 +12,12 @@ open class BasePresenter<T : MvpView> : Presenter<T> {
         mMvpView = null
     }
 
-    fun isViewAttached(): Boolean {
-        return mMvpView != null
-    }
-
     fun getMvpView(): T? {
         return mMvpView
     }
 
-    class MvpViewNotAttachedException :
-        RuntimeException("Please call Presenter.attachView(MvpView) before" + " requesting data to the Presenter")
+    fun isViewAttached(): Boolean {
+        return mMvpView != null
+    }
+
 }

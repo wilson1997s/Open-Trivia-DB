@@ -18,7 +18,10 @@ import kotlinx.android.synthetic.main.fragment_question_count.*
 
 class QuestionCountFragment : BaseFragment(), QuestionCountFragmentMvpView {
 
+    //view
     private var countAdapter: QuestionCountAdapter? = null
+
+    //presenter
     private var questionCountFragmentPresenter: QuestionCountFragmentPresenter? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -50,6 +53,14 @@ class QuestionCountFragment : BaseFragment(), QuestionCountFragmentMvpView {
         }
     }
 
+    override fun setCountRecyclerViewVisible(visible: Boolean) {
+        if (visible) {
+            rv_question_count.visibility = View.VISIBLE
+        } else {
+            rv_question_count.visibility = View.INVISIBLE
+        }
+    }
+
     override fun setupQuestionCountRecyclerView(categoryList: ArrayList<Category>) {
         val layoutManager = LinearLayoutManager(view!!.context)
         layoutManager.orientation = LinearLayoutManager.VERTICAL
@@ -59,14 +70,6 @@ class QuestionCountFragment : BaseFragment(), QuestionCountFragmentMvpView {
         rv_question_count.adapter = countAdapter
 
         countAdapter!!.notifyDataSetChanged()
-    }
-
-    override fun setCountRecyclerViewVisible(visible: Boolean) {
-        if (visible) {
-            rv_question_count.visibility = View.VISIBLE
-        } else {
-            rv_question_count.visibility = View.INVISIBLE
-        }
     }
 
     override fun showError(errorCode: String) {

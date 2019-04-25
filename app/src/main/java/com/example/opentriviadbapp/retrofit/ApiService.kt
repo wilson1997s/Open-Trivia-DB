@@ -15,15 +15,11 @@ interface ApiService {
     @GET("api_category.php")
     fun getCategoryList(): Observable<CategoryListResponse>
 
-    @GET("api_count.php")
-    fun getQuestionCountList(@Query("category") id: Int): Observable<CategoryCountResponse>
-
-    //maybe not used
-    @GET("api.php?amount=1")
-    fun getQuestionDefault(): Observable<QuestionResponse>
-
     @GET
     fun getQuestion(@Url url: String): Observable<QuestionResponse>
+
+    @GET("api_count.php")
+    fun getQuestionCountList(@Query("category") id: Int): Observable<CategoryCountResponse>
 
     @GET("api_token.php?command=request")
     fun getToken(): Observable<TokenResponse>

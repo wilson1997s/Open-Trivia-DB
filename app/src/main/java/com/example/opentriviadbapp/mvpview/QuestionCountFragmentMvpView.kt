@@ -11,5 +11,4 @@ interface QuestionCountFragmentMvpView: MvpView {
 
     fun setupQuestionCountRecyclerView(categoryList: ArrayList<Category>)
 
-
 }

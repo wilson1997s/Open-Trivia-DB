@@ -11,17 +11,31 @@ import io.reactivex.schedulers.Schedulers
 
 class MainFragmentPresenter : BasePresenter<MainFragmentMvpView>() {
 
-    private var mCategoryNameList = arrayListOf<String>()
-    private var mCategoryList = arrayListOf<Category>()
+    //for RxJava
     private var compositeDisposable: CompositeDisposable? = CompositeDisposable()
 
-    override fun attachView(mvpView: MainFragmentMvpView) {
-        super.attachView(mvpView)
-    }
+    private var mCategoryNameList = arrayListOf<String>()
+    private var mCategoryList = arrayListOf<Category>()
 
     override fun detachView() {
         super.detachView()
         compositeDisposable!!.clear()
+    }
+
+    fun makeQuestionBundle(category: String, difficulty: String, type: String): Bundle {
+        var bundle = Bundle()
+        var tempId = "default"
+        if (!category.equals("default")) {
+            mCategoryList.forEach {
+                if (it.name.toLowerCase().equals(category)) {
+                    tempId = it.id.toString()
+                }
+            }
+        }
+        bundle.putString("category", tempId)
+        bundle.putString("difficulty", difficulty)
+        bundle.putString("type", type)
+        return bundle
     }
 
     fun setupCategorySpinner() {
@@ -54,22 +68,5 @@ class MainFragmentPresenter : BasePresenter<MainFragmentMvpView>() {
                 )
         )
     }
-
-    fun makeQuestionBundle(category: String, difficulty: String, type: String): Bundle {
-        var bundle = Bundle()
-        var tempId = "default"
-        if (!category.equals("default")) {
-            mCategoryList.forEach {
-                if (it.name.toLowerCase().equals(category)) {
-                    tempId = it.id.toString()
-                }
-            }
-        }
-        bundle.putString("category", tempId)
-        bundle.putString("difficulty", difficulty)
-        bundle.putString("type", type)
-        return bundle
-    }
-
 
 }

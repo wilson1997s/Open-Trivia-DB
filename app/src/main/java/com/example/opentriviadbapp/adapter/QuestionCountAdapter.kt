@@ -11,6 +11,7 @@ import kotlinx.android.synthetic.main.item_quiz_count.view.*
 
 class QuestionCountAdapter(val context: Context, val responseList: ArrayList<Category>) :
     RecyclerView.Adapter<QuestionCountAdapter.ViewHolder>() {
+
     override fun onCreateViewHolder(parent: ViewGroup, position: Int): ViewHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.item_quiz_count, parent, false)
         return ViewHolder(view)

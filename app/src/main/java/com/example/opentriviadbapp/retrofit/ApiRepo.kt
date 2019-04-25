@@ -14,7 +14,7 @@ import retrofit2.converter.jackson.JacksonConverterFactory
 
 object ApiRepo {
 
-    val apiService: ApiService
+    private val apiService: ApiService
 
     init {
         val loggingInterceptor = HttpLoggingInterceptor()
@@ -34,7 +34,6 @@ object ApiRepo {
         this.apiService = retrofit.create(ApiService::class.java)
     }
 
-
     fun getCategoryList(): Observable<CategoryListResponse> {
         return apiService.getCategoryList()
     }
@@ -43,22 +42,7 @@ object ApiRepo {
         return apiService.getQuestionCountList(id)
     }
 
-    fun getQuestionDefault(): Observable<QuestionResponse> {
-        return apiService.getQuestionDefault()
-    }
-
-    fun getQuestion(token: String, category: String, difficulty: String, type: String): Observable<QuestionResponse> {
-        var url: String = "https://opentdb.com/api.php?amount=1&token=$token"
-        if (!category.equals("default")) {
-            url = "$url&category=$category"
-        }
-        if (!difficulty.equals("default")) {
-            url = "$url&difficulty=$difficulty"
-        }
-        if (!type.equals("default")) {
-            url = "$url&type=$type"
-        }
-
+    fun getQuestion(url: String): Observable<QuestionResponse> {
         return apiService.getQuestion(url)
     }
 
