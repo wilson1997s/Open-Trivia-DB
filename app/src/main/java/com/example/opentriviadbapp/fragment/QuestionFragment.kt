@@ -29,6 +29,8 @@ class QuestionFragment : BaseFragment(), QuestionFragmentMvpView {
         questionFragmentPresenter = QuestionFragmentPresenter()
         questionFragmentPresenter!!.attachView(this)
 
+        setActionBarTitle("Question")
+
         return view
     }
 
@@ -52,20 +54,20 @@ class QuestionFragment : BaseFragment(), QuestionFragmentMvpView {
             )
         }
 
-        cv_answer1.setOnClickListener {
-            questionFragmentPresenter!!.checkAnswer(tv_answer1.text.toString())
+        cv_answer_1.setOnClickListener {
+            questionFragmentPresenter!!.checkAnswer(tv_answer_1.text.toString())
         }
 
-        cv_answer2.setOnClickListener {
-            questionFragmentPresenter!!.checkAnswer(tv_answer2.text.toString())
+        cv_answer_2.setOnClickListener {
+            questionFragmentPresenter!!.checkAnswer(tv_answer_2.text.toString())
         }
 
-        cv_answer3.setOnClickListener {
-            questionFragmentPresenter!!.checkAnswer(tv_answer3.text.toString())
+        cv_answer_3.setOnClickListener {
+            questionFragmentPresenter!!.checkAnswer(tv_answer_3.text.toString())
         }
 
-        cv_answer4.setOnClickListener {
-            questionFragmentPresenter!!.checkAnswer(tv_answer4.text.toString())
+        cv_answer_4.setOnClickListener {
+            questionFragmentPresenter!!.checkAnswer(tv_answer_4.text.toString())
         }
     }
 
@@ -75,10 +77,10 @@ class QuestionFragment : BaseFragment(), QuestionFragmentMvpView {
     }
 
     override fun resetAnswerBackground() {
-        cv_answer1.setCardBackgroundColor(Color.WHITE)
-        cv_answer2.setCardBackgroundColor(Color.WHITE)
-        cv_answer3.setCardBackgroundColor(Color.WHITE)
-        cv_answer4.setCardBackgroundColor(Color.WHITE)
+        cv_answer_1.setCardBackgroundColor(Color.WHITE)
+        cv_answer_2.setCardBackgroundColor(Color.WHITE)
+        cv_answer_3.setCardBackgroundColor(Color.WHITE)
+        cv_answer_4.setCardBackgroundColor(Color.WHITE)
     }
 
     override fun setAnswer(type: String, correctAns: String, incorrectAns: ArrayList<String>) {
@@ -86,15 +88,15 @@ class QuestionFragment : BaseFragment(), QuestionFragmentMvpView {
         if (type.equals("boolean")) {
             var position = listOf(correctAns, incorrectAns[0]).shuffled()
 
-            tv_answer1.text = position[0]
-            tv_answer2.text = position[1]
+            tv_answer_1.text = position[0]
+            tv_answer_2.text = position[1]
         } else {
             var position = listOf(correctAns, incorrectAns[0], incorrectAns[1], incorrectAns[2]).shuffled()
 
-            tv_answer1.text = position[0]
-            tv_answer2.text = position[1]
-            tv_answer3.text = position[2]
-            tv_answer4.text = position[3]
+            tv_answer_1.text = position[0]
+            tv_answer_2.text = position[1]
+            tv_answer_3.text = position[2]
+            tv_answer_4.text = position[3]
         }
     }
 
@@ -108,28 +110,28 @@ class QuestionFragment : BaseFragment(), QuestionFragmentMvpView {
         }
 
         when {
-            tv_answer1.text.equals(selectedAns) -> {
-                cv_answer1!!.setCardBackgroundColor(color)
+            tv_answer_1.text.equals(selectedAns) -> {
+                cv_answer_1!!.setCardBackgroundColor(color)
                 if (!correct) {
-                    cv_answer1.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.animation))
+                    cv_answer_1.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.animation))
                 }
             }
-            tv_answer2.text.equals(selectedAns) -> {
-                cv_answer2.setCardBackgroundColor(color)
+            tv_answer_2.text.equals(selectedAns) -> {
+                cv_answer_2.setCardBackgroundColor(color)
                 if (!correct) {
-                    cv_answer2.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.animation))
+                    cv_answer_2.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.animation))
                 }
             }
-            tv_answer3.text.equals(selectedAns) -> {
-                cv_answer3.setCardBackgroundColor(color)
+            tv_answer_3.text.equals(selectedAns) -> {
+                cv_answer_3.setCardBackgroundColor(color)
                 if (!correct) {
-                    cv_answer3.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.animation))
+                    cv_answer_3.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.animation))
                 }
             }
-            tv_answer4.text.equals(selectedAns) -> {
-                cv_answer4.setCardBackgroundColor(color)
+            tv_answer_4.text.equals(selectedAns) -> {
+                cv_answer_4.setCardBackgroundColor(color)
                 if (!correct) {
-                    cv_answer4.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.animation))
+                    cv_answer_4.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.animation))
                 }
             }
         }
@@ -144,13 +146,13 @@ class QuestionFragment : BaseFragment(), QuestionFragmentMvpView {
         }
 
         if (number == 2) {   //for boolean's question
-            cv_answer1.visibility = valueArray[visibleValue]
-            cv_answer2.visibility = valueArray[visibleValue]
+            cv_answer_1.visibility = valueArray[visibleValue]
+            cv_answer_2.visibility = valueArray[visibleValue]
         } else if (number == 4) { //for multiple's question
-            cv_answer1.visibility = valueArray[visibleValue]
-            cv_answer2.visibility = valueArray[visibleValue]
-            cv_answer3.visibility = valueArray[visibleValue]
-            cv_answer4.visibility = valueArray[visibleValue]
+            cv_answer_1.visibility = valueArray[visibleValue]
+            cv_answer_2.visibility = valueArray[visibleValue]
+            cv_answer_3.visibility = valueArray[visibleValue]
+            cv_answer_4.visibility = valueArray[visibleValue]
         }
     }
 

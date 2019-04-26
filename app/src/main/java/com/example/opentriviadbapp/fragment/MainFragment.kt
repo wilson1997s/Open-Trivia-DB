@@ -13,7 +13,6 @@ import com.example.opentriviadbapp.base.BaseFragment
 import com.example.opentriviadbapp.model.Category
 import com.example.opentriviadbapp.mvpview.MainFragmentMvpView
 import com.example.opentriviadbapp.presenter.MainFragmentPresenter
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_main.*
 
 class MainFragment : BaseFragment(), MainFragmentMvpView {
@@ -32,7 +31,7 @@ class MainFragment : BaseFragment(), MainFragmentMvpView {
         mainFragmentPresenter = MainFragmentPresenter()  //create presenter
         mainFragmentPresenter!!.attachView(this) //attach presenter
 
-        activity!!.tb_main_act.title = "OTDB App"
+        setActionBarTitle("OTDB App")
 
         return view
     }

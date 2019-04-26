@@ -12,7 +12,6 @@ import com.example.opentriviadbapp.base.BaseFragment
 import com.example.opentriviadbapp.model.Category
 import com.example.opentriviadbapp.mvpview.QuestionCountFragmentMvpView
 import com.example.opentriviadbapp.presenter.QuestionCountFragmentPresenter
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_question_count.*
 
 
@@ -30,7 +29,7 @@ class QuestionCountFragment : BaseFragment(), QuestionCountFragmentMvpView {
         questionCountFragmentPresenter = QuestionCountFragmentPresenter()
         questionCountFragmentPresenter!!.attachView(this)
 
-        activity!!.tb_main_act.title = "Question Category"
+        setActionBarTitle("Question Category")
 
         return view
     }
