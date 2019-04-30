@@ -1,5 +1,6 @@
 package com.example.opentriviadbapp.retrofit
 
+import com.example.opentriviadbapp.Constant
 import com.example.opentriviadbapp.model.CategoryCountResponse
 import com.example.opentriviadbapp.model.CategoryListResponse
 import com.example.opentriviadbapp.model.QuestionResponse
@@ -12,19 +13,19 @@ import retrofit2.http.Url
 
 interface ApiService {
 
-    @GET("api_category.php")
+    @GET(Constant.API_CATEGORY)
     fun getCategoryList(): Observable<CategoryListResponse>
 
     @GET
     fun getQuestion(@Url url: String): Observable<QuestionResponse>
 
-    @GET("api_count.php")
-    fun getQuestionCountList(@Query("category") id: Int): Observable<CategoryCountResponse>
+    @GET(Constant.API_COUNT)
+    fun getQuestionCountList(@Query(Constant.JSON_CATEGORY) id: Int): Observable<CategoryCountResponse>
 
-    @GET("api_token.php?command=request")
+    @GET(Constant.API_TOKEN + Constant.API_REQUEST)
     fun getToken(): Observable<TokenResponse>
 
-    @GET("api_token.php?command=reset")
-    fun resetToken(@Query("token") token: String): Observable<TokenResponse>
+    @GET(Constant.API_TOKEN + Constant.API_RESET)
+    fun resetToken(@Query(Constant.JSON_TOKEN) token: String): Observable<TokenResponse>
 
 }

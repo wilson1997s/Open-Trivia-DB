@@ -29,10 +29,10 @@ class QuestionCountAdapter(val context: Context, val responseList: ArrayList<Cat
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun setData(response: Category?, position: Int) {
             itemView.tv_category_name.text = response!!.name
-            itemView.tv_category_easy.text = "Easy: " + response!!.totalEasy.toString()
-            itemView.tv_category_medium.text = "Medium: " + response!!.totalMedium.toString()
-            itemView.tv_category_hard.text = "Hard: " + response!!.totalHard.toString()
-            itemView.tv_total_count.text = response!!.totalQuestion.toString()
+            itemView.tv_category_easy.text = String.format("Easy: %s", response!!.totalEasy.toString())
+            itemView.tv_category_medium.text = String.format("Medium: %s", response!!.totalMedium.toString())
+            itemView.tv_category_hard.text = String.format("Hard: %s", response!!.totalHard.toString())
+            itemView.tv_total_count.text = response.totalQuestion.toString()
         }
     }
 

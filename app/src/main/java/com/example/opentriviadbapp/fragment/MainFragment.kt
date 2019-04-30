@@ -2,6 +2,7 @@ package com.example.opentriviadbapp.fragment
 
 import android.graphics.Color
 import android.os.Bundle
+import android.support.v4.content.ContextCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,6 +25,7 @@ class MainFragment : BaseFragment(), MainFragmentMvpView {
     private var mainFragmentPresenter: MainFragmentPresenter? = null
 
     private var mCategoryList = arrayListOf<Category>()
+    private var mCategoryNameList = arrayListOf<String>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         var view = inflater.inflate(R.layout.fragment_main, container, false)
@@ -31,15 +33,15 @@ class MainFragment : BaseFragment(), MainFragmentMvpView {
         mainFragmentPresenter = MainFragmentPresenter()  //create presenter
         mainFragmentPresenter!!.attachView(this) //attach presenter
 
-        setActionBarTitle("OTDB App")
+        setActionBarTitle(context!!.getString(R.string.app_name))
 
         return view
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        mainFragmentPresenter!!.setupCategorySpinner()  //setup category
+        mainFragmentPresenter!!.getCategorySpinnerData()  //setup category
 
         tv_question_count.setOnClickListener { view ->
             view.findNavController().navigate(R.id.question_count_action)
@@ -47,6 +49,7 @@ class MainFragment : BaseFragment(), MainFragmentMvpView {
 
         btn_next.setOnClickListener { view ->
             var bundle = mainFragmentPresenter!!.makeQuestionBundle(
+                mCategoryList,
                 spn_category.selectedItem.toString().toLowerCase(),
                 spn_difficulty.selectedItem.toString().toLowerCase(),
                 spn_type.selectedItem.toString().toLowerCase()
@@ -64,7 +67,7 @@ class MainFragment : BaseFragment(), MainFragmentMvpView {
     override fun setButtonNextEnable(enable: Boolean) {
         btn_next.isEnabled = enable
         if (enable) {
-            btn_next.setBackgroundColor(Color.parseColor("#D81B60")) //color accent
+            btn_next.setBackgroundColor(ContextCompat.getColor(context!!, R.color.colorAccent)) //color accent
         } else {
             btn_next.setBackgroundColor(Color.LTGRAY)
         }
@@ -78,12 +81,14 @@ class MainFragment : BaseFragment(), MainFragmentMvpView {
         }
     }
 
-    override fun setupCategorySpinner(categoryList: ArrayList<Category>, categoryNameList: ArrayList<String>) {
+    override fun displayCategorySpinner(categoryList: ArrayList<Category>, categoryNameList: ArrayList<String>) {
         mCategoryList.clear()
         mCategoryList.addAll(categoryList)
+        mCategoryNameList.clear()
+        mCategoryNameList.addAll(categoryNameList)
 
         dataAdapter =
-            ArrayAdapter(activity!!.applicationContext, android.R.layout.simple_spinner_item, categoryNameList)
+            ArrayAdapter(activity!!.applicationContext, android.R.layout.simple_spinner_item, mCategoryNameList)
         dataAdapter!!.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spn_category.adapter = dataAdapter
         dataAdapter!!.notifyDataSetChanged()

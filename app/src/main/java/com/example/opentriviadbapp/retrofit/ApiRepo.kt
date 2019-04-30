@@ -1,5 +1,6 @@
 package com.example.opentriviadbapp.retrofit
 
+import com.example.opentriviadbapp.Constant
 import com.example.opentriviadbapp.model.CategoryCountResponse
 import com.example.opentriviadbapp.model.CategoryListResponse
 import com.example.opentriviadbapp.model.QuestionResponse
@@ -27,7 +28,7 @@ object ApiRepo {
             .client(okHttpClient)
             .addConverterFactory(JacksonConverterFactory.create())
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-            .baseUrl("https://opentdb.com/")
+            .baseUrl(Constant.BASE_URL)
             .build()
 
         this.apiService = retrofit.create(ApiService::class.java)
@@ -41,7 +42,17 @@ object ApiRepo {
         return apiService.getQuestionCountList(id)
     }
 
-    fun getQuestion(url: String): Observable<QuestionResponse> {
+    fun getQuestion(token: String, category: String, difficulty: String, type: String): Observable<QuestionResponse> {
+        var url = "${Constant.BASE_URL}${Constant.API_GET_1_QUESTION}&${Constant.JSON_TOKEN}=$token"
+        if (!category.equals(Constant.DEFAULT)) {
+            url = "$url&${Constant.JSON_CATEGORY}=$category"
+        }
+        if (!difficulty.equals(Constant.DEFAULT)) {
+            url = "$url&${Constant.JSON_DIFFICULTY}=$difficulty"
+        }
+        if (!type.equals(Constant.DEFAULT)) {
+            url = "$url&${Constant.JSON_TYPE}=$type"
+        }
         return apiService.getQuestion(url)
     }
 

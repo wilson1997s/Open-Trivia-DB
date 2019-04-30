@@ -1,6 +1,7 @@
 package com.example.opentriviadbapp.presenter
 
 import android.os.Bundle
+import com.example.opentriviadbapp.Constant
 import com.example.opentriviadbapp.base.BasePresenter
 import com.example.opentriviadbapp.model.Category
 import com.example.opentriviadbapp.mvpview.MainFragmentMvpView
@@ -14,36 +15,33 @@ class MainFragmentPresenter : BasePresenter<MainFragmentMvpView>() {
     //for RxJava
     private var compositeDisposable: CompositeDisposable? = CompositeDisposable()
 
-    private var mCategoryNameList = arrayListOf<String>()
-    private var mCategoryList = arrayListOf<Category>()
-
     override fun detachView() {
         super.detachView()
         compositeDisposable!!.clear()
     }
 
-    fun makeQuestionBundle(category: String, difficulty: String, type: String): Bundle {
+    fun makeQuestionBundle(categoryList: ArrayList<Category>, category: String, difficulty: String, type: String): Bundle {
         var bundle = Bundle()
-        var tempId = "default"
-        if (!category.equals("default")) {
-            mCategoryList.forEach {
+        var tempId = Constant.DEFAULT
+        if (!category.equals(Constant.DEFAULT)) {
+            categoryList.forEach {
                 if (it.name.toLowerCase().equals(category)) {
                     tempId = it.id.toString()
                 }
             }
         }
-        bundle.putString("category", tempId)
-        bundle.putString("difficulty", difficulty)
-        bundle.putString("type", type)
+        bundle.putString(Constant.BUNDLE_KEY_CATEGORY, tempId)
+        bundle.putString(Constant.BUNDLE_KEY_DIFFICULTY, difficulty)
+        bundle.putString(Constant.BUNDLE_KEY_TYPE, type)
         return bundle
     }
 
-    fun setupCategorySpinner() {
+    fun getCategorySpinnerData() {
 
         getMvpView()!!.setButtonNextEnable(false)
 
-        mCategoryNameList.clear()
-        mCategoryList.clear()
+        var mCategoryNameList = arrayListOf<String>()
+        var mCategoryList = arrayListOf<Category>()
 
         compositeDisposable!!.add(
             ApiRepo.getCategoryList()
@@ -51,7 +49,7 @@ class MainFragmentPresenter : BasePresenter<MainFragmentMvpView>() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     { result ->
-                        mCategoryNameList.add("Default")  //default value for category
+                        mCategoryNameList.add(Constant.DEFAULT.capitalize())  //default value for category
 
                         result.categoryList.forEach {
                             //add each Category and name into the list
@@ -61,7 +59,7 @@ class MainFragmentPresenter : BasePresenter<MainFragmentMvpView>() {
 
                         getMvpView()!!.setCategoryProgressBarVisible(false)
                         getMvpView()!!.setButtonNextEnable(true)
-                        getMvpView()!!.setupCategorySpinner(mCategoryList, mCategoryNameList)
+                        getMvpView()!!.displayCategorySpinner(mCategoryList, mCategoryNameList)
 
                     },
                     { error -> getMvpView()!!.showError("Error! " + error.message) }

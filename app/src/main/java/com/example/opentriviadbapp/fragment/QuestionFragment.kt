@@ -5,12 +5,14 @@ import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.support.design.widget.Snackbar
+import android.support.v4.content.ContextCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.navigation.findNavController
+import com.example.opentriviadbapp.Constant
 import com.example.opentriviadbapp.R
 import com.example.opentriviadbapp.base.BaseFragment
 import com.example.opentriviadbapp.mvpview.QuestionFragmentMvpView
@@ -29,45 +31,45 @@ class QuestionFragment : BaseFragment(), QuestionFragmentMvpView {
         questionFragmentPresenter = QuestionFragmentPresenter()
         questionFragmentPresenter!!.attachView(this)
 
-        setActionBarTitle("Question")
+        setActionBarTitle(context!!.getString(R.string.question_action_bar))
 
         return view
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        var category = arguments?.getString("category")
-        var difficulty = arguments?.getString("difficulty")
-        var type = arguments?.getString("type")
+        var category = arguments?.getString(Constant.BUNDLE_KEY_CATEGORY)
+        var difficulty = arguments?.getString(Constant.BUNDLE_KEY_DIFFICULTY)
+        var type = arguments?.getString(Constant.BUNDLE_KEY_TYPE)
 
-        questionFragmentPresenter!!.passBundle(category!!, difficulty!!, type!!)
         //to set question, first get token
-        questionFragmentPresenter!!.getToken(activity)
+        questionFragmentPresenter!!.getToken(activity, category!!, difficulty!!, type!!)
 
         view!!.btn_roll.setOnClickListener {
-            questionFragmentPresenter!!.setQuestion(
+            questionFragmentPresenter!!.getQuestion(
                 activity!!.getSharedPreferences(
-                    "token1",
+                    Constant.SHARED_PREF_NAME,
                     Context.MODE_PRIVATE
-                ).getString("token", "")!!
+                ).getString(Constant.PAIR_NAME, "")!!,
+                category!!, difficulty!!, type!!
             )
         }
 
         cv_answer_1.setOnClickListener {
-            questionFragmentPresenter!!.checkAnswer(tv_answer_1.text.toString())
+            questionFragmentPresenter!!.checkAnswer(tv_answer_1.text.toString(), correctAns!!)
         }
 
         cv_answer_2.setOnClickListener {
-            questionFragmentPresenter!!.checkAnswer(tv_answer_2.text.toString())
+            questionFragmentPresenter!!.checkAnswer(tv_answer_2.text.toString(), correctAns!!)
         }
 
         cv_answer_3.setOnClickListener {
-            questionFragmentPresenter!!.checkAnswer(tv_answer_3.text.toString())
+            questionFragmentPresenter!!.checkAnswer(tv_answer_3.text.toString(), correctAns!!)
         }
 
         cv_answer_4.setOnClickListener {
-            questionFragmentPresenter!!.checkAnswer(tv_answer_4.text.toString())
+            questionFragmentPresenter!!.checkAnswer(tv_answer_4.text.toString(), correctAns!!)
         }
     }
 
@@ -83,9 +85,13 @@ class QuestionFragment : BaseFragment(), QuestionFragmentMvpView {
         cv_answer_4.setCardBackgroundColor(Color.WHITE)
     }
 
+    var correctAns: String? = null
+
     override fun setAnswer(type: String, correctAns: String, incorrectAns: ArrayList<String>) {
 
-        if (type.equals("boolean")) {
+        this.correctAns = correctAns
+
+        if (type.equals(Constant.BOOLEAN)) {
             var position = listOf(correctAns, incorrectAns[0]).shuffled()
 
             tv_answer_1.text = position[0]
@@ -138,8 +144,8 @@ class QuestionFragment : BaseFragment(), QuestionFragmentMvpView {
     }
 
     override fun setAnswerVisible(visible: Boolean, number: Int) {
-        var valueArray = arrayListOf<Int>(View.VISIBLE, View.INVISIBLE)
-        var visibleValue: Int = if (visible) {
+        val valueArray = arrayListOf<Int>(View.VISIBLE, View.INVISIBLE)
+        val visibleValue: Int = if (visible) {
             0
         } else {
             1
@@ -161,9 +167,9 @@ class QuestionFragment : BaseFragment(), QuestionFragmentMvpView {
         //set color
         val drawable = tv_difficulty.getBackground() as GradientDrawable
         when (difficulty.toLowerCase()) {
-            "easy" -> drawable.setColor(Color.GREEN)
-            "medium" -> drawable.setColor(Color.parseColor("#FFA500"))
-            "hard" -> drawable.setColor(Color.RED)
+            Constant.QUES_DIFFICULTY_EASY -> drawable.setColor(Color.GREEN)
+            Constant.QUES_DIFFICULTY_MEDIUM -> drawable.setColor(ContextCompat.getColor(context!!, R.color.colorOrange))
+            Constant.QUES_DIFFICULTY_HARD -> drawable.setColor(Color.RED)
         }
     }
 
@@ -192,7 +198,7 @@ class QuestionFragment : BaseFragment(), QuestionFragmentMvpView {
     override fun setRollButtonEnable(enable: Boolean) {
         if (enable) {
             btn_roll.isEnabled = true
-            btn_roll.setBackgroundColor(Color.parseColor("#D81B60"))
+            btn_roll.setBackgroundColor(ContextCompat.getColor(context!!, R.color.colorAccent))
         } else {
             btn_roll.isEnabled = false
             btn_roll.setBackgroundColor(Color.LTGRAY)
@@ -202,8 +208,8 @@ class QuestionFragment : BaseFragment(), QuestionFragmentMvpView {
     override fun setSnackbar(text: String) {
         Snackbar
             .make(view!!, text, Snackbar.LENGTH_INDEFINITE)
-            .setAction("Back") {
-                view!!.findNavController()?.navigate(R.id.action_back)
+            .setAction(context!!.getString(R.string.snackbar_back_text)) {
+                view!!.findNavController().navigate(R.id.action_back)
             }.show()
     }
 

@@ -13,9 +13,6 @@ class QuestionCountFragmentPresenter : BasePresenter<QuestionCountFragmentMvpVie
     //for RxJava
     private var compositeDisposable: CompositeDisposable? = CompositeDisposable()
 
-    private var mCategoryList: ArrayList<Category> = arrayListOf<Category>()
-    private var counter = 0
-
     override fun detachView() {
         super.detachView()
         compositeDisposable!!.clear()
@@ -28,6 +25,9 @@ class QuestionCountFragmentPresenter : BasePresenter<QuestionCountFragmentMvpVie
     }
 
     private fun getCategoryList() {
+
+        var mCategoryList: ArrayList<Category> = arrayListOf<Category>()
+
         compositeDisposable!!.add(
             ApiRepo.getCategoryList()
                 .subscribeOn(Schedulers.io())
@@ -38,33 +38,33 @@ class QuestionCountFragmentPresenter : BasePresenter<QuestionCountFragmentMvpVie
                             //add reach Category and name into the list
                             mCategoryList.add(it)
                         }
-                        getQuestionCount()
+                        getQuestionCount(mCategoryList)
                     },
                     { error -> getMvpView()!!.showError("Error! " + error.message) }
                 )
         )
     }
 
-    private fun getQuestionCount() {
-
-        mCategoryList.forEach {
+    private fun getQuestionCount(categoryList: ArrayList<Category>) {
+        var counter = 0
+        categoryList.forEach {
             compositeDisposable!!.add(
                 ApiRepo.getQuestionCountList(it.id)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                         { result ->
-                            mCategoryList.forEachIndexed { index, element ->
-                                if (mCategoryList[index].id == it.id) {
-                                    mCategoryList[index].totalEasy = result.categoryCount.totalEasy
-                                    mCategoryList[index].totalMedium = result.categoryCount.totalMedium
-                                    mCategoryList[index].totalHard = result.categoryCount.totalHard
-                                    mCategoryList[index].totalQuestion = result.categoryCount.totalQuestion
+                            categoryList.forEachIndexed { index, element ->
+                                if (categoryList[index].id == it.id) {
+                                    categoryList[index].totalEasy = result.categoryCount.totalEasy
+                                    categoryList[index].totalMedium = result.categoryCount.totalMedium
+                                    categoryList[index].totalHard = result.categoryCount.totalHard
+                                    categoryList[index].totalQuestion = result.categoryCount.totalQuestion
                                 }
                             }
                             counter++
-                            if (counter == mCategoryList.size) {
-                                getMvpView()!!.setupQuestionCountRecyclerView(mCategoryList)
+                            if (counter == categoryList.size) {
+                                getMvpView()!!.setupQuestionCountRecyclerView(categoryList)
                                 getMvpView()!!.setCountProgressBarVisible(false)
                                 getMvpView()!!.setCountRecyclerViewVisible(true)
                             }

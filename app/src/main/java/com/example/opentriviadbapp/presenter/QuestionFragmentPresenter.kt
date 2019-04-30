@@ -3,6 +3,7 @@ package com.example.opentriviadbapp.presenter
 import android.content.Context
 import android.support.v4.app.FragmentActivity
 import android.text.Html
+import com.example.opentriviadbapp.Constant
 import com.example.opentriviadbapp.base.BasePresenter
 import com.example.opentriviadbapp.model.Question
 import com.example.opentriviadbapp.mvpview.QuestionFragmentMvpView
@@ -16,20 +17,6 @@ class QuestionFragmentPresenter : BasePresenter<QuestionFragmentMvpView>() {
     //for Rxjava
     private var compositeDisposable = CompositeDisposable()
 
-    // from bundle (prefix b)
-    private var bCategory: String? = null
-    private var bDifficulty: String? = null
-    private var bType: String? = null
-
-    // from API response (prefix m)
-    private var mSelectedQuestion: Question? = null
-    private var mType: String? = null
-    private var mDifficulty: String? = null
-    private var mQuestion: String? = null
-    private var mCorrectAnswer: String? = null
-    private var mIncorrectAnswer = arrayListOf<String>()
-
-    private var mToken = "AAAA"
     private var mActivity: FragmentActivity? = null
 
     override fun detachView() {
@@ -37,63 +24,46 @@ class QuestionFragmentPresenter : BasePresenter<QuestionFragmentMvpView>() {
         compositeDisposable.clear()
     }
 
-    fun checkAnswer(selectedAns: String) {
+    fun checkAnswer(selectedAns: String, correctAns: String) {
         getMvpView()!!.resetAnswerBackground()
-        if (selectedAns.equals(mCorrectAnswer)) {
+        if (selectedAns.equals(correctAns)) {
             getMvpView()!!.setAnswerFeedback(true, selectedAns)
         } else {
             getMvpView()!!.setAnswerFeedback(false, selectedAns)
         }
     }
 
-    fun getToken(activity: FragmentActivity?) {
+    fun getToken(activity: FragmentActivity?, category: String, difficulty: String, type: String) {
         mActivity = activity
 
         //reading from SharedPreference
-        var sharedPref = activity!!.getSharedPreferences("token1", Context.MODE_PRIVATE)
+        var sharedPref = activity!!.getSharedPreferences(Constant.SHARED_PREF_NAME, Context.MODE_PRIVATE)
 
-        if (sharedPref!!.contains("token")) {
-            mToken = sharedPref!!.getString("token", "AAAA")!!
-            setQuestion(mToken)
+        if (sharedPref!!.contains(Constant.PAIR_NAME)) {
+            val mToken = sharedPref!!.getString(Constant.PAIR_NAME, "AAAA")!!
+            getQuestion(mToken, category!!, difficulty!!, type!!)
         } else {
-            requestNewToken()
+            requestNewToken(category!!, difficulty!!, type!!)
         }
     }
 
-    fun passBundle(category: String, difficulty: String, type: String) {
-        bCategory = category
-        bDifficulty = difficulty
-        bType = type
-    }
-
-    fun setQuestion(token: String) {
+    fun getQuestion(token: String, category: String, difficulty: String, type: String) {
         getMvpView()!!.setQuestionVisible(false)
         getMvpView()!!.setAnswerVisible(false, 4)
         getMvpView()!!.setRollButtonEnable(false)
         getMvpView()!!.setQuestionProgressBarVisible(true)
         getMvpView()!!.resetAnswerBackground()
 
-        var url = "https://opentdb.com/api.php?amount=1&token=$token"
-        if (!bCategory.equals("default")) {
-            url = "$url&category=$bCategory"
-        }
-        if (!bDifficulty.equals("default")) {
-            url = "$url&difficulty=$bDifficulty"
-        }
-        if (!bType.equals("default")) {
-            url = "$url&type=$bType"
-        }
-
         compositeDisposable.add(
-            ApiRepo.getQuestion(url)
+            ApiRepo.getQuestion(token, category!!, difficulty!!, type!!)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     { result ->
-                        if (result.responseCode != 4) {
-                            handleResponse(result.responseCode, result.results)
+                        if (result.responseCode != Constant.RESPONSE_CODE_4) {
+                            handleResponse(result.responseCode, result.results, category!!, difficulty!!, type!!)
                         } else {
-                            handleResponse(result.responseCode, listOf())
+                            handleResponse(result.responseCode, listOf(), category!!, difficulty!!, type!!)
                         }
                     },
                     { error -> getMvpView()!!.showError("Error! " + error.message) }
@@ -101,56 +71,66 @@ class QuestionFragmentPresenter : BasePresenter<QuestionFragmentMvpView>() {
         )
     }
 
-    private fun handleResponse(responseCode: Int, results: List<Question>) {
-        when (responseCode) {
-            0 -> {  //return successfully
-                mSelectedQuestion = results[0]
-                mType = mSelectedQuestion!!.type
-                mDifficulty = mSelectedQuestion!!.difficulty
-                mQuestion = Html.fromHtml(mSelectedQuestion!!.question).toString()
-                mCorrectAnswer = Html.fromHtml(mSelectedQuestion!!.correctAnswer).toString()
-                val tempIncorrectAnswer = mSelectedQuestion!!.incorrectAnswer
+    private fun handleResponse(
+        responseCode: Int,
+        results: List<Question>,
+        category: String,
+        difficulty: String,
+        type: String
+    ) {
 
-                mIncorrectAnswer.clear()
+        val sharedPref = mActivity!!.getSharedPreferences(Constant.SHARED_PREF_NAME, Context.MODE_PRIVATE)
+        val mToken = sharedPref!!.getString(Constant.PAIR_NAME, "AAAA")!!
+
+        when (responseCode) {
+            Constant.RESPONSE_CODE_0 -> {  //return successfully
+                val mSelectedQuestion = results[0]
+                val mType = mSelectedQuestion.type
+                val mDifficulty = mSelectedQuestion.difficulty
+                val mQuestion = Html.fromHtml(mSelectedQuestion.question).toString()
+                val mCorrectAnswer = Html.fromHtml(mSelectedQuestion.correctAnswer).toString()
+                val tempIncorrectAnswer = mSelectedQuestion.incorrectAnswer
+
+                val mIncorrectAnswer = arrayListOf<String>()
                 tempIncorrectAnswer.forEach {
                     mIncorrectAnswer.add(Html.fromHtml(it).toString())
                 }
 
-                getMvpView()!!.setQuestion(mQuestion!!)
-                getMvpView()!!.setDifficulty(mDifficulty!!)
+                getMvpView()!!.setQuestion(mQuestion)
+                getMvpView()!!.setDifficulty(mDifficulty)
 
 
-                if (mType!!.toLowerCase().equals("boolean")) {
+                if (mType.toLowerCase().equals("boolean")) {
                     getMvpView()!!.setAnswerVisible(true, 2)
 
                 } else {
                     getMvpView()!!.setAnswerVisible(true, 4)
                 }
 
-                getMvpView()!!.setAnswer(mType!!, mCorrectAnswer!!, mIncorrectAnswer)
+                getMvpView()!!.setAnswer(mType, mCorrectAnswer, mIncorrectAnswer)
                 getMvpView()!!.setQuestionProgressBarVisible(false)
                 getMvpView()!!.setRollButtonEnable(true)
                 getMvpView()!!.setQuestionVisible(true)
             }
 
-            1 -> { //could not return result
+            Constant.RESPONSE_CODE_1 -> { //could not return result
                 getMvpView()!!.setSnackbar("No result found, please refine criteria")
                 getMvpView()!!.setQuestionProgressBarVisible(false)
             }
 
-            3 -> { //token not found
-                requestNewToken()
-                setQuestion(mToken)
+            Constant.RESPONSE_CODE_3 -> { //token not found
+                requestNewToken(category, difficulty, type)
             }
 
-            4 -> { //token empty session
+            Constant.RESPONSE_CODE_4 -> { //token empty session
                 resetToken()
-                setQuestion(mToken)
+                getQuestion(mToken, category!!, difficulty!!, type!!)
             }
         }
     }
 
-    private fun requestNewToken() {
+    private fun requestNewToken(category: String, difficulty: String, type: String) {
+
         compositeDisposable.add(
             ApiRepo.getToken()
                 .subscribeOn(Schedulers.io())
@@ -158,18 +138,22 @@ class QuestionFragmentPresenter : BasePresenter<QuestionFragmentMvpView>() {
                 .subscribe(
                     { result ->
                         //write to sharedPreference
-                        val sharedPref = mActivity?.getSharedPreferences("token1", Context.MODE_PRIVATE)
+                        val sharedPref =
+                            mActivity?.getSharedPreferences(Constant.SHARED_PREF_NAME, Context.MODE_PRIVATE)
 
-                        sharedPref!!.edit().putString("token", result.token).apply()
-                        mToken = result.token
+                        sharedPref!!.edit().putString(Constant.PAIR_NAME, result.token).apply()
 
-                        setQuestion(mToken)
+                        getQuestion(result.token, category!!, difficulty!!, type!!)
                     }, { error -> getMvpView()!!.showError("Error! " + error.message) }
                 )
         )
     }
 
     private fun resetToken() {
+
+        val sharedPref = mActivity!!.getSharedPreferences(Constant.SHARED_PREF_NAME, Context.MODE_PRIVATE)
+        val mToken = sharedPref!!.getString(Constant.PAIR_NAME, "AAAA")!!
+
         compositeDisposable.add(
             ApiRepo.resetToken(mToken)
                 .subscribeOn(Schedulers.io())

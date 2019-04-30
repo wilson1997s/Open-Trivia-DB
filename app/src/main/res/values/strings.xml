@@ -5,9 +5,13 @@
     <string name="tv_category_prompt">Select category:</string>
     <string name="tv_difficulty_prompt">Select difficulty:</string>
     <string name="tv_type_prompt">Select type:</string>
-    
+
     <string name="tv_view_question_count">VIEW QUESTION COUNT</string>
 
+    <string name="category_action_bar">Question Category</string>
+    <string name="question_action_bar">Question</string>
+
+    <string name="snackbar_back_text">Back</string>
 
 
     <string-array name="array_difficulty">

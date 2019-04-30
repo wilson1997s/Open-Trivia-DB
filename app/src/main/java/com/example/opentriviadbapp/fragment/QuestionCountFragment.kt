@@ -29,12 +29,12 @@ class QuestionCountFragment : BaseFragment(), QuestionCountFragmentMvpView {
         questionCountFragmentPresenter = QuestionCountFragmentPresenter()
         questionCountFragmentPresenter!!.attachView(this)
 
-        setActionBarTitle("Question Category")
+        setActionBarTitle(context!!.getString(R.string.category_action_bar))
 
         return view
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         questionCountFragmentPresenter!!.setupRecyclerView()
     }
